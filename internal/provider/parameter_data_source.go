@@ -35,16 +35,16 @@ type parameterOptionModel struct {
 }
 
 type parameterDataSourceModel struct {
-	ID                  types.String             `tfsdk:"id"`
-	Name                types.String             `tfsdk:"name"`
-	DisplayName         types.String             `tfsdk:"display_name"`
-	Description         types.String             `tfsdk:"description"`
-	Type                types.String             `tfsdk:"type"`
-	Default             types.Dynamic            `tfsdk:"default"`
-	Value               types.Dynamic            `tfsdk:"value"`
-	EnvironmentVariable types.String             `tfsdk:"environment_variable"`
-	Validation          parameterValidationModel `tfsdk:"validation"`
-	Options             []parameterOptionModel   `tfsdk:"option"`
+	ID                  types.String              `tfsdk:"id"`
+	Name                types.String              `tfsdk:"name"`
+	DisplayName         types.String              `tfsdk:"display_name"`
+	Description         types.String              `tfsdk:"description"`
+	Type                types.String              `tfsdk:"type"`
+	Default             types.Dynamic             `tfsdk:"default"`
+	Value               types.Dynamic             `tfsdk:"value"`
+	EnvironmentVariable types.String              `tfsdk:"environment_variable"`
+	Validation          *parameterValidationModel `tfsdk:"validation"`
+	Options             []parameterOptionModel    `tfsdk:"option"`
 }
 
 func NewParameterDataSource() datasource.DataSource {
@@ -292,13 +292,13 @@ func parseParameterValue(parameterType string, raw string, fromEnv bool) (attr.V
 	}
 }
 
-func validateParameterValue(parameterType string, value attr.Value, validation parameterValidationModel, options []parameterOptionModel) diag.Diagnostics {
+func validateParameterValue(parameterType string, value attr.Value, validation *parameterValidationModel, options []parameterOptionModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	switch parameterType {
 	case parameterTypeString:
-		minSet := !validation.Min.IsNull() && !validation.Min.IsUnknown()
-		maxSet := !validation.Max.IsNull() && !validation.Max.IsUnknown()
+		minSet := validation != nil && !validation.Min.IsNull() && !validation.Min.IsUnknown()
+		maxSet := validation != nil && !validation.Max.IsNull() && !validation.Max.IsUnknown()
 		if minSet || maxSet {
 			diags.AddError("Invalid validation", "`validation` is only supported when `type = \"number\"`")
 			return diags
@@ -352,29 +352,31 @@ func validateParameterValue(parameterType string, value attr.Value, validation p
 		}
 
 		val := numberValue.ValueBigFloat()
-		if validation.Min.IsUnknown() || validation.Max.IsUnknown() {
-			diags.AddError("Invalid validation", "`validation.min` and `validation.max` must be known when set")
-			return diags
-		}
-
-		if !validation.Min.IsNull() && !validation.Max.IsNull() {
-			if validation.Min.ValueBigFloat().Cmp(validation.Max.ValueBigFloat()) > 0 {
-				diags.AddError("Invalid validation", "`validation.min` must be <= `validation.max`")
+		if validation != nil {
+			if validation.Min.IsUnknown() || validation.Max.IsUnknown() {
+				diags.AddError("Invalid validation", "`validation.min` and `validation.max` must be known when set")
 				return diags
 			}
-		}
 
-		if !validation.Min.IsNull() {
-			if val.Cmp(validation.Min.ValueBigFloat()) < 0 {
-				diags.AddError("Invalid value", fmt.Sprintf("value %s is less than validation.min %s", val.String(), validation.Min.ValueBigFloat().String()))
-				return diags
+			if !validation.Min.IsNull() && !validation.Max.IsNull() {
+				if validation.Min.ValueBigFloat().Cmp(validation.Max.ValueBigFloat()) > 0 {
+					diags.AddError("Invalid validation", "`validation.min` must be <= `validation.max`")
+					return diags
+				}
 			}
-		}
 
-		if !validation.Max.IsNull() {
-			if val.Cmp(validation.Max.ValueBigFloat()) > 0 {
-				diags.AddError("Invalid value", fmt.Sprintf("value %s is greater than validation.max %s", val.String(), validation.Max.ValueBigFloat().String()))
-				return diags
+			if !validation.Min.IsNull() {
+				if val.Cmp(validation.Min.ValueBigFloat()) < 0 {
+					diags.AddError("Invalid value", fmt.Sprintf("value %s is less than validation.min %s", val.String(), validation.Min.ValueBigFloat().String()))
+					return diags
+				}
+			}
+
+			if !validation.Max.IsNull() {
+				if val.Cmp(validation.Max.ValueBigFloat()) > 0 {
+					diags.AddError("Invalid value", fmt.Sprintf("value %s is greater than validation.max %s", val.String(), validation.Max.ValueBigFloat().String()))
+					return diags
+				}
 			}
 		}
 

@@ -24,7 +24,7 @@ func TestParameterEnvironmentVariable(t *testing.T) {
 
 func TestValidateParameterValue_NumberMin(t *testing.T) {
 	value := types.NumberValue(new(big.Float).SetInt64(19))
-	diags := validateParameterValue(parameterTypeNumber, value, parameterValidationModel{
+	diags := validateParameterValue(parameterTypeNumber, value, &parameterValidationModel{
 		Min: types.NumberValue(new(big.Float).SetInt64(20)),
 	}, nil)
 
@@ -35,7 +35,7 @@ func TestValidateParameterValue_NumberMin(t *testing.T) {
 
 func TestValidateParameterValue_StringOptions(t *testing.T) {
 	value := types.StringValue("SA2.MEDIUM8")
-	diags := validateParameterValue(parameterTypeString, value, parameterValidationModel{}, []parameterOptionModel{
+	diags := validateParameterValue(parameterTypeString, value, nil, []parameterOptionModel{
 		{Value: types.StringValue("SA2.MEDIUM2")},
 		{Value: types.StringValue("SA2.MEDIUM4")},
 	})
