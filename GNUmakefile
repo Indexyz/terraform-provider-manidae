@@ -1,5 +1,11 @@
 default: fmt lint install generate
 
+GOCACHE ?= $(CURDIR)/.gocache
+export GOCACHE
+
+GOLANGCI_LINT_CACHE ?= $(CURDIR)/.golangci-lint-cache
+export GOLANGCI_LINT_CACHE
+
 build:
 	go build -v ./...
 

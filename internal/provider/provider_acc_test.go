@@ -1,3 +1,6 @@
+//go:build acceptance
+// +build acceptance
+
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 

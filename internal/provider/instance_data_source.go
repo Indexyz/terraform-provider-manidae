@@ -119,7 +119,7 @@ func getRequiredUintEnvAsInt64(key string) (int64, diag.Diagnostics) {
 		return 0, diags
 	}
 
-	if uintValue > uint64(^uint64(0)>>1) {
+	if uintValue > (^uint64(0) >> 1) {
 		diags.AddError("Invalid environment variable", fmt.Sprintf("%q is too large to fit into Terraform int64", key))
 		return 0, diags
 	}
