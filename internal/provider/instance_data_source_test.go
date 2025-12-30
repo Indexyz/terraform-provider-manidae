@@ -33,3 +33,15 @@ func TestDeriveStartCount(t *testing.T) {
 		}
 	})
 }
+
+func TestGetRequiredEnvString(t *testing.T) {
+	t.Setenv("MANIDAE_CONNECTION_ID", "  abc123  ")
+
+	got, diags := getRequiredEnvString("MANIDAE_CONNECTION_ID")
+	if diags.HasError() {
+		t.Fatalf("unexpected diagnostics: %#v", diags)
+	}
+	if got != "abc123" {
+		t.Fatalf("expected %q, got %q", "abc123", got)
+	}
+}

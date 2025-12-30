@@ -19,10 +19,11 @@ import (
 type instanceDataSource struct{}
 
 type instanceDataSourceModel struct {
-	ID         types.Int64  `tfsdk:"id"`
-	Action     types.String `tfsdk:"action"`
-	State      types.String `tfsdk:"state"`
-	StartCount types.Int64  `tfsdk:"start_count"`
+	ID           types.Int64  `tfsdk:"id"`
+	ConnectionID types.String `tfsdk:"connection_id"`
+	Action       types.String `tfsdk:"action"`
+	State        types.String `tfsdk:"state"`
+	StartCount   types.Int64  `tfsdk:"start_count"`
 }
 
 func NewInstanceDataSource() datasource.DataSource {
@@ -40,6 +41,10 @@ func (d *instanceDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				MarkdownDescription: "Instance ID from `MANIDAE_INSTANCE_ID` (must be a non-negative integer).",
+			},
+			"connection_id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Connection ID from `MANIDAE_CONNECTION_ID`.",
 			},
 			"action": schema.StringAttribute{
 				Computed:            true,
@@ -66,6 +71,12 @@ func (d *instanceDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
+	connectionID, connectionDiags := getRequiredEnvString("MANIDAE_CONNECTION_ID")
+	resp.Diagnostics.Append(connectionDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	action, actionDiags := getRequiredEnvString("MANIDAE_ACTION")
 	resp.Diagnostics.Append(actionDiags...)
 	if resp.Diagnostics.HasError() {
@@ -85,6 +96,7 @@ func (d *instanceDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	data.ID = types.Int64Value(id)
+	data.ConnectionID = types.StringValue(connectionID)
 	data.Action = types.StringValue(action)
 	data.State = types.StringValue(state)
 	data.StartCount = types.Int64Value(startCount)
