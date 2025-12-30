@@ -21,6 +21,7 @@ type instanceDataSource struct{}
 type instanceDataSourceModel struct {
 	ID           types.Int64  `tfsdk:"id"`
 	ConnectionID types.String `tfsdk:"connection_id"`
+	Identity     types.String `tfsdk:"identity"`
 	Action       types.String `tfsdk:"action"`
 	State        types.String `tfsdk:"state"`
 	StartCount   types.Int64  `tfsdk:"start_count"`
@@ -45,6 +46,10 @@ func (d *instanceDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 			"connection_id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "Connection ID from `MANIDAE_CONNECTION_ID`.",
+			},
+			"identity": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Identity from `MANIDAE_IDENTITY`.",
 			},
 			"action": schema.StringAttribute{
 				Computed:            true,
@@ -77,6 +82,12 @@ func (d *instanceDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
+	identity, identityDiags := getRequiredEnvString("MANIDAE_IDENTITY")
+	resp.Diagnostics.Append(identityDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	action, actionDiags := getRequiredEnvString("MANIDAE_ACTION")
 	resp.Diagnostics.Append(actionDiags...)
 	if resp.Diagnostics.HasError() {
@@ -97,6 +108,7 @@ func (d *instanceDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	data.ID = types.Int64Value(id)
 	data.ConnectionID = types.StringValue(connectionID)
+	data.Identity = types.StringValue(identity)
 	data.Action = types.StringValue(action)
 	data.State = types.StringValue(state)
 	data.StartCount = types.Int64Value(startCount)
