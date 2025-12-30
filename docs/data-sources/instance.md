@@ -20,5 +20,6 @@ Reads Manidae instance context from environment variables.
 - `action` (String) Action from `MANIDAE_ACTION`.
 - `connection_id` (String) Connection ID from `MANIDAE_CONNECTION_ID`.
 - `id` (Number) Instance ID from `MANIDAE_INSTANCE_ID` (must be a non-negative integer).
+- `identity` (String) Identity from `MANIDAE_IDENTITY`.
 - `start_count` (Number) Derived from `state`: `1` when `on`, otherwise `0`.
 - `state` (String) Instance state from `MANIDAE_INSTANCE_STATE` (`on` or `off`).
