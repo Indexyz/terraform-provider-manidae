@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,6 +16,7 @@ import (
 
 // Ensure ManidaeProvider satisfies the provider interface.
 var _ provider.Provider = &ManidaeProvider{}
+var _ provider.ProviderWithFunctions = &ManidaeProvider{}
 
 // ManidaeProvider defines the provider implementation.
 type ManidaeProvider struct {
@@ -63,6 +65,12 @@ func (p *ManidaeProvider) DataSources(ctx context.Context) []func() datasource.D
 	return []func() datasource.DataSource{
 		NewParameterDataSource,
 		NewInstanceDataSource,
+	}
+}
+
+func (p *ManidaeProvider) Functions(ctx context.Context) []func() function.Function {
+	return []func() function.Function{
+		NewMappingMacAddressFunction,
 	}
 }
 
