@@ -117,4 +117,3 @@ func TestMappingMacAddressFunction_RejectsNonIntegerID(t *testing.T) {
 		t.Fatalf("expected error, got none")
 	}
 }
-
